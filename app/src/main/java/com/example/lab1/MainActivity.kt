@@ -12,6 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 
 enum class AppDestinations {
     HOME, PROFILE
@@ -48,6 +53,26 @@ fun MainApp() {
 
 @Composable
 fun HomeScreen() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "sub_screen_1") {
+
+        composable("sub_screen_1") {
+            SubScreen1(
+                onNavigateNext = { navController.navigate("sub_screen_2") }
+            )
+        }
+
+        composable("sub_screen_2") {
+            SubScreen2(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+    }
+}
+
+@Composable
+fun SubScreen1(onNavigateNext: () -> Unit) {
     var textValue by remember { mutableStateOf("Початковий текст") }
 
     Column(
@@ -60,6 +85,26 @@ fun HomeScreen() {
             Text("Змінити текст")
         }
 
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(onClick = onNavigateNext) {
+            Text("Перейти на другий підекран")
+        }
+    }
+}
+
+@Composable
+fun SubScreen2(onNavigateBack: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Це другий підекран", fontSize = 20.sp, modifier = Modifier.padding(bottom = 16.dp))
+
+        Button(onClick = onNavigateBack) {
+            Text("Повернутися назад")
+        }
     }
 }
 
