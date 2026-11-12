@@ -4,19 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import screens.HomeScreen
+import screens.ProfileScreen
+import com.example.lab1.viewmodels.HomeViewModel
+import com.example.lab1.viewmodels.ProfileViewModel
 
 enum class AppDestinations {
     HOME, PROFILE
@@ -35,53 +38,50 @@ class MainActivity : ComponentActivity() {
 fun MainApp() {
     var currentScreen by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Filled.Home, contentDescription = "Головна") },
+                    label = { Text("Головна") },
+                    selected = currentScreen == AppDestinations.HOME,
+                    onClick = { currentScreen = AppDestinations.HOME }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Filled.Person, contentDescription = "Профіль") },
+                    label = { Text("Профіль") },
+                    selected = currentScreen == AppDestinations.PROFILE,
+                    onClick = { currentScreen = AppDestinations.PROFILE }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            Button(onClick = { currentScreen = AppDestinations.HOME }) { Text("Головна") }
-            Button(onClick = { currentScreen = AppDestinations.PROFILE }) { Text("Профіль") }
-        }
-
-        when (currentScreen) {
-            AppDestinations.HOME -> HomeScreen()
-            AppDestinations.PROFILE -> ProfileScreen()
+            when (currentScreen) {
+                AppDestinations.HOME -> HomeScreen()
+                AppDestinations.PROFILE -> ProfileScreen()
+            }
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
-    val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = "sub_screen_1") {
-
-        composable("sub_screen_1") {
-            SubScreen1(
-                onNavigateNext = { navController.navigate("sub_screen_2") }
-            )
-        }
-
-        composable("sub_screen_2") {
-            SubScreen2(
-                onNavigateBack = { navController.popBackStack() }
-            )
-        }
-    }
-}
-
-@Composable
-fun SubScreen1(onNavigateNext: () -> Unit) {
-    var textValue by remember { mutableStateOf("Початковий текст") }
-
+fun SubScreen1(
+    onNavigateNext: () -> Unit,
+    viewModel: HomeViewModel = viewModel()
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = textValue, fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
-        Button(onClick = { textValue = "Текст змінено" }) {
+        Text(text = viewModel.textValue, fontSize = 24.sp, modifier = Modifier.padding(bottom = 16.dp))
+
+        Button(onClick = { viewModel.updateText() }) {
             Text("Змінити текст")
         }
 
@@ -104,22 +104,6 @@ fun SubScreen2(onNavigateBack: () -> Unit) {
 
         Button(onClick = onNavigateBack) {
             Text("Повернутися назад")
-        }
-    }
-}
-
-@Composable
-fun ProfileScreen() {
-    var textValue by rememberSaveable { mutableStateOf("Початковий текст Профілю") }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Text(text = textValue, fontSize = 18.sp, modifier = Modifier.padding(bottom = 8.dp))
-        Button(onClick = { textValue = "Текст змінено через rememberSaveable!" }) {
-            Text("Оновити дані")
         }
     }
 }
